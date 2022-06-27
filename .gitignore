@@ -1,0 +1,12 @@
+*.env
+.python-version
+target/
+dbt_modules/
+logs/
+.DS_Store
+*.out
+.vscode/
+__pycache__/
+docker-compose-ecs.yml
+Dockerfile_app
+semantics/droughty_profiles.yml
