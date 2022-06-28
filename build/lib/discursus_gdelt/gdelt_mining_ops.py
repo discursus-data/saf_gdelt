@@ -2,6 +2,8 @@
 # https://github.com/quakerpunk/content-audit/blob/origin/content_audit.py
 
 from dagster import op, AssetMaterialization, Output
+from dagster_shell import create_shell_command_op
+
 from bs4 import BeautifulSoup
 from optparse import OptionParser
 import urllib.request
@@ -207,3 +209,11 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, gde
         }
     )
     yield Output(df_gdelt_enhanced_articles)
+
+
+def mine_gdelt_events(context):
+    gdelt_events_miner = create_shell_command_op(
+        "zsh < $DISCURSUS_MINER_GDELT_HOME/gdelt_events_miner.zsh", 
+        name = "gdelt_events_miner_op") 
+    
+    return gdelt_events_miner
