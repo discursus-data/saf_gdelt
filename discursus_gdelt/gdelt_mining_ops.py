@@ -3,6 +3,7 @@
 
 from dagster import op, AssetMaterialization, Output
 from dagster_shell import create_shell_command_op
+from dagster import file_relative_path
 
 from bs4 import BeautifulSoup
 from optparse import OptionParser
@@ -213,7 +214,7 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, gde
 
 def mine_gdelt_events():
     gdelt_events_miner_op = create_shell_command_op(
-        "zsh < miners/gdelt_events_miner.zsh", 
+        "zsh < " + file_relative_path(__file__, "miners/gdelt_events_miner.zsh"), 
         name = "gdelt_events_miner_op") 
     
     return gdelt_events_miner_op
