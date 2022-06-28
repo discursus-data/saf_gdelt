@@ -211,7 +211,7 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, gde
     yield Output(df_gdelt_enhanced_articles)
 
 
-def mine_gdelt_events(context):
+def mine_gdelt_events():
     gdelt_events_miner_op = create_shell_command_op(
         "zsh < miners/gdelt_events_miner.zsh", 
         name = "gdelt_events_miner_op") 
