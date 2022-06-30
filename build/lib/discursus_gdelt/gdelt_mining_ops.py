@@ -19,7 +19,7 @@ import os
 from io import StringIO
 import pandas as pd
 
-from gdelt_miners import get_latest_events
+from discursus_gdelt import gdelt_miners
 
 class ContentAuditor:
 
@@ -216,5 +216,5 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, s3_
 
 @op
 def mine_gdelt_events(context, s3_bucket_name):
-    s3_object_location = get_latest_events(s3_bucket_name)
+    s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
     return s3_object_location
