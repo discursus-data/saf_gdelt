@@ -6,5 +6,4 @@ discursus_gdelt.egg-info/PKG-INFO
 discursus_gdelt.egg-info/SOURCES.txt
 discursus_gdelt.egg-info/dependency_links.txt
 discursus_gdelt.egg-info/top_level.txt
-discursus_gdelt/miners/gdelt_events_miner.zsh
 discursus_gdelt/miners/gdelt_mentions_miner.zsh
