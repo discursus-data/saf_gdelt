@@ -19,7 +19,7 @@ import os
 from io import StringIO
 import pandas as pd
 
-from gdelt_events_miner import get_latest_events
+from gdelt_miners import get_latest_events
 
 class ContentAuditor:
 
