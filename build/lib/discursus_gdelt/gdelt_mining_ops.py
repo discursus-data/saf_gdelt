@@ -23,12 +23,12 @@ from gdelt_events_miner import get_latest_events
 
 class ContentAuditor:
 
-    def __init__(self, filename):
+    def __init__(self, s3_bucket_name, filename):
         """
         Initialization method for the ContentAuditor class.
         """
         s3 = boto3.resource('s3')
-        obj = s3.Object('discursus-io', filename)
+        obj = s3.Object(s3_bucket_name, filename)
 
         self.filehandle = obj.get()['Body'].read().decode('utf-8')
         self.article_urls = []
@@ -102,7 +102,7 @@ class ContentAuditor:
         self.soupy_data = ""
 
 
-    def write_to_spreadsheet(self, filename):
+    def write_to_spreadsheet(self, s3_bucket_name, filename):
         """
         Write data from self.meta_info to spreadsheet. 
         """
@@ -136,7 +136,7 @@ class ContentAuditor:
         
         # Save to S3
         s3 = boto3.resource('s3')
-        s3.Bucket("discursus-io").upload_file("mine_mention_tags.csv", path_to_csv_export)
+        s3.Bucket(s3_bucket_name).upload_file("mine_mention_tags.csv", path_to_csv_export)
         os.remove("mine_mention_tags.csv")
 
 
@@ -152,13 +152,13 @@ class ContentAuditor:
 
 
 @op
-def materialize_gdelt_mining_asset(context, gdelt_mined_events_filename):
+def materialize_gdelt_mining_asset(context, s3_bucket_name, gdelt_mined_events_filename):
     # Extracting which file we're materializing
     filename = gdelt_mined_events_filename.splitlines()[-1]
 
     # Getting csv file and transform to pandas dataframe
     s3 = boto3.resource('s3')
-    obj = s3.Object('discursus-io', filename)
+    obj = s3.Object(s3_bucket_name, filename)
     df_gdelt_events = pd.read_csv(StringIO(obj.get()['Body'].read().decode('utf-8')), sep='\t')
     
     # Materialize asset
@@ -166,7 +166,7 @@ def materialize_gdelt_mining_asset(context, gdelt_mined_events_filename):
         asset_key = ["sources", "gdelt_events"],
         description = "List of events mined on GDELT",
         metadata={
-            "path": "s3://discursus-io/" + filename,
+            "path": "s3://" + s3_bucket_name + "/" + filename,
             "rows": df_gdelt_events.index.size
         }
     )
@@ -174,12 +174,12 @@ def materialize_gdelt_mining_asset(context, gdelt_mined_events_filename):
 
 
 @op
-def enhance_articles(context, gdelt_mined_events_filename):
+def enhance_articles(context, s3_bucket_name, gdelt_mined_events_filename):
     # Extracting which file we're enhancing
     filename = gdelt_mined_events_filename.splitlines()[-1]
 
     # Get a unique list of urls to enhance
-    content_bot = ContentAuditor(filename)
+    content_bot = ContentAuditor(s3_bucket_name, filename)
     content_bot.get_list_of_urls()
 
     # Enhance urls
@@ -192,13 +192,13 @@ def enhance_articles(context, gdelt_mined_events_filename):
 
     # Save enhanced urls to S3
     context.log.info("Exporting to S3")
-    content_bot.write_to_spreadsheet(filename)
+    content_bot.write_to_spreadsheet(s3_bucket_name, filename)
 
     return df_gdelt_enhanced_articles
 
 
 @op
-def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, gdelt_mined_events_filename):
+def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, s3_bucket_name, gdelt_mined_events_filename):
     # Extracting which file we're enhancing
     filename = gdelt_mined_events_filename.splitlines()[-1]
 
@@ -207,7 +207,7 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, gde
         asset_key=["sources", "gdelt_articles"],
         description="List of enhanced articles mined from GDELT",
         metadata={
-            "path": "s3://discursus-io/" + filename.split(".")[0] + "." + filename.split(".")[1] + ".enhanced.csv",
+            "path": "s3://" + s3_bucket_name + "/" + filename.split(".")[0] + "." + filename.split(".")[1] + ".enhanced.csv",
             "rows": df_gdelt_enhanced_articles['mention_identifier'].size
         }
     )
