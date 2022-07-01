@@ -212,6 +212,8 @@ def enhance_articles(context, latest_gdelt_events_s3_location):
     filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Get a unique list of urls to enhance
+    context.log.info("Targeting the following events: " + str(event_code))
+    context.log.info("Targeting the following countries: " + str(countries))
     content_bot = ContentAuditor(s3_bucket_name, filename)
     content_bot.get_list_of_urls(event_code, countries)
 
