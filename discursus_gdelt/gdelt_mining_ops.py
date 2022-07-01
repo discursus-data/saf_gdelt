@@ -19,7 +19,7 @@ import os
 from io import StringIO
 import pandas as pd
 
-from gdelt_events_miner import get_latest_events
+from discursus_gdelt import gdelt_miners
 
 class ContentAuditor:
 
@@ -41,15 +41,19 @@ class ContentAuditor:
         self.reg_expres = re.compile(r"www.(.+?)(.com|.net|.org)")
     
 
-    def get_list_of_urls(self):
+    def get_list_of_urls(self, event_code, countries):
         """
         Method which iterates over list of articles, only keep relevant ones and deduplicates.
         """
         for line in self.filehandle.splitlines():
             line_url = line.split("\t")[60].strip()
 
-            if int(line.split("\t")[28]) == 14:
-                self.article_urls.append(line_url)
+            if int(line.split("\t")[28]) == event_code:
+                if countries:
+                    if str(line.split("\t")[53]) in countries:
+                        self.article_urls.append(line_url)
+                else:
+                    self.article_urls.append(line_url)
             
             self.article_urls = list(set(self.article_urls))
 
@@ -151,10 +155,30 @@ class ContentAuditor:
         return info_dict
 
 
-@op
-def materialize_gdelt_mining_asset(context, s3_bucket_name, gdelt_mined_events_filename):
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    }
+)
+def mine_gdelt_events(context):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
+    s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
+    return s3_object_location
+
+
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    }
+)
+def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
     # Extracting which file we're materializing
-    filename = gdelt_mined_events_filename.splitlines()[-1]
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Getting csv file and transform to pandas dataframe
     s3 = boto3.resource('s3')
@@ -173,14 +197,23 @@ def materialize_gdelt_mining_asset(context, s3_bucket_name, gdelt_mined_events_f
     yield Output(df_gdelt_events)
 
 
-@op
-def enhance_articles(context, s3_bucket_name, gdelt_mined_events_filename):
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    }
+)
+def enhance_articles(context, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+    event_code = context.resources.gdelt_client.get_event_code()
+    countries = context.resources.gdelt_client.get_countries()
+
     # Extracting which file we're enhancing
-    filename = gdelt_mined_events_filename.splitlines()[-1]
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Get a unique list of urls to enhance
     content_bot = ContentAuditor(s3_bucket_name, filename)
-    content_bot.get_list_of_urls()
+    content_bot.get_list_of_urls(event_code, countries)
 
     # Enhance urls
     context.log.info("Enhancing " + str(len(content_bot.article_urls)) + " articles")
@@ -197,10 +230,17 @@ def enhance_articles(context, s3_bucket_name, gdelt_mined_events_filename):
     return df_gdelt_enhanced_articles
 
 
-@op
-def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, s3_bucket_name, gdelt_mined_events_filename):
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    }
+)
+def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
     # Extracting which file we're enhancing
-    filename = gdelt_mined_events_filename.splitlines()[-1]
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Materialize asset
     yield AssetMaterialization(
@@ -212,9 +252,3 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, s3_
         }
     )
     yield Output(df_gdelt_enhanced_articles)
-
-
-@op
-def mine_gdelt_events(context, s3_bucket_name):
-    s3_object_location = get_latest_events(s3_bucket_name)
-    return s3_object_location

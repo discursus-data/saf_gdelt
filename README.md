@@ -2,11 +2,26 @@
 GDELT mining package for the discursus core project
 
 # How to use this package
+## Core Framework
 - [Use the core framework](https://github.com/discursus-io/discursus_core)
 - install the library in your Docker file: `RUN pip3 install git+https://github.com/discursus-io/discursus_gdelt@release/0.1`
 
 
-# How to configure this package
+## Configurations
+### Configure the Package Resource
+Create a gdelt configuration file (`gdelt_configs.yamls`) in the `configs` section of the core framwork.
+
+```
+resources:
+  gdelt:
+    config:
+      event_code: 14 #You need to define at least an event code that you're targeting
+      countries: #You can define 0 or more countries to target
+        - US
+        - CA
+```
+
+### Configure the AWS Resource
 Create a aws configuration file (`aws_configs.yamls`) in the `configs` section of the core framwork.
 
 ```
@@ -27,21 +42,7 @@ class AWSClient:
 
 
     def get_s3_bucket_name(self):
-        """
-        Returns the connection used by the resource for querying data.
-        Should in principle not be used directly.
-        """
-
-        if self._session is None:
-            self._base_url = self._conn_host
-
-            # Build our session instance, which we will use for any
-            # requests to the API.
-            self._session = requests.Session()
-
-            self._session.auth = (self._conn_login, self._conn_password)
-
-        return self._session, self._base_url
+        return self._s3_bucket_name
 
 
 @resource(
@@ -62,12 +63,20 @@ def aws_client(context):
     )
 ```
 
-Once you call an op from the library, you will need to pass the AWS resource you created.
+## Calling a function
+When you call function (a Dagster op) from the library, you will need to pass the resources you configured.
 
 ```
+aws_configs = config_from_files(['configs/aws_configs.yaml'])
+gdelt_configs = config_from_files(['configs/gdelt_configs.yaml'])
+
+my_aws_client = aws_client.configured(aws_configs)
+my_gdelt_client = gdelt_resources.gdelt_client.configured(gdelt_configs)
+
 @job(
     resource_defs = {
-        'aws_client': my_aws_client
+        'aws_client': my_aws_client,
+        'gdelt_client': my_gdelt_client
     }
 )
 def mine_gdelt_data():
@@ -75,7 +84,7 @@ def mine_gdelt_data():
 ```
 
 
-# Instructions to build library
+# Development of library
 - Once improvements have been added to package
 - Compile a new version: `python setup.py bdist_wheel`
 - Commit branch and PR into new release branch
