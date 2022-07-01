@@ -1,4 +1,4 @@
-from dagster import resource, StringSource,  IntSource
+from dagster import resource, IntSource, Field
 
 class GDELTClient:
     def __init__(self, event_code, countries):
@@ -20,7 +20,7 @@ class GDELTClient:
             "gdelt": {
                 "config": {
                     "event_code": IntSource,
-                    "countries": StringSource
+                    "countries": Field(list)
                 }
             }
         }
