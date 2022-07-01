@@ -24,7 +24,7 @@ def get_latest_events(s3_bucket_name):
         zip_ref.extractall('.')
 
 
-    # #Save gdelt data to S3
+    #Save gdelt data to S3
     print("Copying to S3")
     s3 = boto3.resource('s3')
     s3_object_location = 'sources/gdelt/' + latest_events_filedate + '/' + latest_events_filename_csv

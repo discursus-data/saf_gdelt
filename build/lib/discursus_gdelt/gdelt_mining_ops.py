@@ -151,9 +151,9 @@ class ContentAuditor:
         return info_dict
 
 
-@op(required_resource_keys={"s3_bucket_name"})
+@op(required_resource_keys={"aws_client"})
 def mine_gdelt_events(context):
-    s3_bucket_name = context.resources.s3_bucket_name
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
     return s3_object_location
