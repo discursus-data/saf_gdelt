@@ -183,9 +183,9 @@ def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
     yield Output(df_gdelt_events)
 
 
-@op(required_resource_keys={"s3_bucket_name"})
+@op(required_resource_keys={"aws_client"})
 def enhance_articles(context, latest_gdelt_events_s3_location):
-    s3_bucket_name = context.resources.s3_bucket_name
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     # Extracting which file we're enhancing
     filename = latest_gdelt_events_s3_location.splitlines()[-1]
@@ -209,9 +209,9 @@ def enhance_articles(context, latest_gdelt_events_s3_location):
     return df_gdelt_enhanced_articles
 
 
-@op(required_resource_keys={"s3_bucket_name"})
+@op(required_resource_keys={"aws_client"})
 def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, latest_gdelt_events_s3_location):
-    s3_bucket_name = context.resources.s3_bucket_name
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     # Extracting which file we're enhancing
     filename = latest_gdelt_events_s3_location.splitlines()[-1]
