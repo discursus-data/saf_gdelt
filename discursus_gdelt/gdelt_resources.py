@@ -17,7 +17,7 @@ class GDELTClient:
 @resource(
     config_schema={
         "resources": {
-            "s3": {
+            "gdelt": {
                 "config": {
                     "event_code": IntSource,
                     "countries": StringSource
