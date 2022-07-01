@@ -151,10 +151,20 @@ class ContentAuditor:
         return info_dict
 
 
-@op
-def materialize_gdelt_mining_asset(context, s3_bucket_name, gdelt_mined_events_filename):
+@op(required_resource_keys={"s3_bucket_name"})
+def mine_gdelt_events(context):
+    s3_bucket_name = context.resources.s3_bucket_name
+
+    s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
+    return s3_object_location
+
+
+@op(required_resource_keys={"aws_client"})
+def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
     # Extracting which file we're materializing
-    filename = gdelt_mined_events_filename.splitlines()[-1]
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Getting csv file and transform to pandas dataframe
     s3 = boto3.resource('s3')
@@ -173,10 +183,12 @@ def materialize_gdelt_mining_asset(context, s3_bucket_name, gdelt_mined_events_f
     yield Output(df_gdelt_events)
 
 
-@op
-def enhance_articles(context, s3_bucket_name, gdelt_mined_events_filename):
+@op(required_resource_keys={"s3_bucket_name"})
+def enhance_articles(context, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.s3_bucket_name
+
     # Extracting which file we're enhancing
-    filename = gdelt_mined_events_filename.splitlines()[-1]
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Get a unique list of urls to enhance
     content_bot = ContentAuditor(s3_bucket_name, filename)
@@ -197,10 +209,12 @@ def enhance_articles(context, s3_bucket_name, gdelt_mined_events_filename):
     return df_gdelt_enhanced_articles
 
 
-@op
-def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, s3_bucket_name, gdelt_mined_events_filename):
+@op(required_resource_keys={"s3_bucket_name"})
+def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.s3_bucket_name
+
     # Extracting which file we're enhancing
-    filename = gdelt_mined_events_filename.splitlines()[-1]
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
 
     # Materialize asset
     yield AssetMaterialization(
@@ -212,9 +226,3 @@ def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, s3_
         }
     )
     yield Output(df_gdelt_enhanced_articles)
-
-
-@op
-def mine_gdelt_events(context, s3_bucket_name):
-    s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
-    return s3_object_location
