@@ -2,8 +2,10 @@ import boto3
 from urllib.request import urlopen, urlretrieve
 import zipfile
 import csv
+from io import StringIO
+import pandas as pd
 
-def get_latest_events(s3_bucket_name):
+def get_latest_events():
     #Get url for latest events
     print("Get meta info from GDELT")
 
@@ -23,7 +25,13 @@ def get_latest_events(s3_bucket_name):
     with zipfile.ZipFile(latest_events_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
 
+    #Read csv into dataframe
+    df_latest_events  = pd.read_csv(StringIO(latest_events_filename_csv.get()['Body'].read().decode('utf-8')), sep='\t')
 
+    return df_latest_events, latest_events_filedate, latest_events_filename_csv
+
+
+def save_latest_events(s3_bucket_name, df_latest_events, latest_events_filedate, latest_events_filename_csv):
     #Save gdelt data to S3
     print("Copying to S3")
     s3 = boto3.resource('s3')
@@ -31,7 +39,7 @@ def get_latest_events(s3_bucket_name):
     s3.Object(s3_bucket_name, s3_object_location).put(Body = open(latest_events_filename_csv, 'rb'))
     print("Saved latest events to S3: " + s3_object_location)
 
-    return s3_object_location
+    return df_latest_events, s3_object_location
 
 
 def get_latest_mentions(s3_bucket_name):

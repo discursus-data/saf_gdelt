@@ -13,13 +13,35 @@ from content_auditor import ContentAuditor
     required_resource_keys = {
         "aws_client",
         "gdelt_client"
+    },
+    out = {
+        "df_latest_events": Out(), 
+        "latest_events_filedate": Out(), 
+        "latest_events_filename_csv": Out()
     }
 )
 def mine_gdelt_events(context):
+    df_latest_events, latest_events_filedate, latest_events_filename_csv = gdelt_miners.get_latest_events()
+
+    return df_latest_events, latest_events_filedate, latest_events_filename_csv
+
+
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    },
+    out = {
+        "df_latest_events": Out(), 
+        "s3_object_location": Out()
+    }
+)
+def save_gdelt_events(context, df_latest_events, latest_events_filedate, latest_events_filename_csv):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
-    s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
-    return s3_object_location
+    df_latest_events, s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events, latest_events_filedate, latest_events_filename_csv)
+
+    return df_latest_events, s3_object_location
 
 
 @op(
@@ -28,16 +50,11 @@ def mine_gdelt_events(context):
         "gdelt_client"
     }
 )
-def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
+def materialize_gdelt_mining_asset(context, df_latest_events, latest_gdelt_events_s3_location):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     # Extracting which file we're materializing
     filename = latest_gdelt_events_s3_location.splitlines()[-1]
-
-    # Getting csv file and transform to pandas dataframe
-    s3 = boto3.resource('s3')
-    obj = s3.Object(s3_bucket_name, filename)
-    df_gdelt_events = pd.read_csv(StringIO(obj.get()['Body'].read().decode('utf-8')), sep='\t')
     
     # Materialize asset
     yield AssetMaterialization(
@@ -45,10 +62,10 @@ def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
         description = "List of events mined on GDELT",
         metadata={
             "path": "s3://" + s3_bucket_name + "/" + filename,
-            "rows": df_gdelt_events.index.size
+            "rows": df_latest_events.index.size
         }
     )
-    yield Output(df_gdelt_events)
+    yield Output(df_latest_events)
 
 
 @op(
