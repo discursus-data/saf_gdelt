@@ -29,7 +29,7 @@ def mine_latest_events(latest_events_url):
         zip_ref.extractall('.')
 
     #Read csv into dataframe
-    df_latest_events  = pd.read_csv(StringIO(open(latest_events_filename_csv, 'rb').get()['Body'].read().decode('utf-8')), sep='\t')
+    df_latest_events  = pd.read_csv(latest_events_filename_csv, sep='\t')
 
     return df_latest_events
 
