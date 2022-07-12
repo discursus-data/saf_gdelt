@@ -7,7 +7,7 @@ from io import StringIO
 import pandas as pd
 
 from discursus_gdelt import gdelt_miners
-from content_auditor import ContentAuditor
+from discursus_gdelt import content_auditor
 
 @op(
     required_resource_keys = {
@@ -90,7 +90,7 @@ def enhance_articles(context, latest_gdelt_events_s3_location):
     # Get a unique list of urls to enhance
     context.log.info("Targeting the following events: " + str(event_code))
     context.log.info("Targeting the following countries: " + str(countries))
-    content_bot = ContentAuditor(s3_bucket_name, filename)
+    content_bot = content_auditor.ContentAuditor(s3_bucket_name, filename)
     content_bot.get_list_of_urls(event_code, countries)
 
     # Enhance urls
