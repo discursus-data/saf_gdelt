@@ -28,7 +28,7 @@ def get_latest_events_url(context):
         "gdelt_client"
     }
 )
-def mine_gdelt_events(context, latest_events_url):
+def mine_latest_events(context, latest_events_url):
     df_latest_events = gdelt_miners.mine_latest_events(latest_events_url)
     context.log.info("Mined : " + str(len(df_latest_events)) + " events")
 
