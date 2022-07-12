@@ -1,158 +1,25 @@
-# Credit goes to...
-# https://github.com/quakerpunk/content-audit/blob/origin/content_audit.py
-
 from dagster import op, AssetMaterialization, Output
 from dagster_shell import create_shell_command_op
 from dagster import file_relative_path
 
-from bs4 import BeautifulSoup
-from optparse import OptionParser
-import urllib.request
-import urllib.error
-import random
-import csv
-import urllib.parse
-import re
-import time
 import boto3
-import os
 from io import StringIO
 import pandas as pd
 
 from discursus_gdelt import gdelt_miners
+from content_auditor import ContentAuditor
 
-class ContentAuditor:
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    }
+)
+def get_latest_events_url(context):
+    latest_events_url = gdelt_miners.get_latest_events_url()
+    context.log.info("Mining from : " + latest_events_url)
 
-    def __init__(self, s3_bucket_name, filename):
-        """
-        Initialization method for the ContentAuditor class.
-        """
-        s3 = boto3.resource('s3')
-        obj = s3.Object(s3_bucket_name, filename)
-
-        self.filehandle = obj.get()['Body'].read().decode('utf-8')
-        self.article_urls = []
-        self.soupy_data = ""
-        self.csv_output = ""
-        self.content = ""
-        self.text_file = ""
-        self.site_info = []
-        self.url_parts = ""
-        self.reg_expres = re.compile(r"www.(.+?)(.com|.net|.org)")
-    
-
-    def get_list_of_urls(self, event_code, countries):
-        """
-        Method which iterates over list of articles, only keep relevant ones and deduplicates.
-        """
-        for line in self.filehandle.splitlines():
-            line_url = line.split("\t")[60].strip()
-
-            if int(line.split("\t")[28]) == event_code:
-                if countries:
-                    if str(line.split("\t")[53]) in countries:
-                        self.article_urls.append(line_url)
-                else:
-                    self.article_urls.append(line_url)
-            
-            self.article_urls = list(set(self.article_urls))
-
-
-    def read_url(self):
-        """
-        Method which reads in a given url (to the constructor) and puts data
-        into a BeautifulSoup context.
-        """
-        ua_string = 'Content-Audit/2.0'
-        for article_url in self.article_urls:
-            # print ("Parsing %s" % line_url)
-            self.url_parts = urllib.parse.urlparse(article_url)
-            req = urllib.request.Request(article_url)
-            req.add_header('User-Agent', ua_string)
-            try:
-                data = urllib.request.urlopen(req, timeout = 5)
-            except:
-                continue
-            self.soupy_data = BeautifulSoup(data, features="html.parser")
-            try:
-                self.extract_tags(article_url)
-            except:
-                continue
-            time.sleep(random.uniform(1, 3))
-        print("End of extraction")
-
-
-    def extract_tags(self, article_url):
-        """
-        Searches through self.soupy_data and extracts meta tags such as page
-        description and title for inclusion into content audit spreadsheet
-        """
-        page_info = {}
-        page_info['mention_identifier'] = article_url
-
-        for tag in self.soupy_data.find_all('meta', attrs={"name": True}):
-            try:
-                page_info[tag['name']] = tag['content']
-            except:
-                page_info[tag['name']] = ''
-        page_info['title'] = self.soupy_data.head.title.contents[0]
-        page_info['filename'] = self.url_parts[2]
-        try:
-            page_info['name'] = self.soupy_data.h3.get_text()
-        except:
-            page_info['name'] = ''
-        self.add_necessary_tags(page_info, ['keywords', 'description', 'title'])
-        self.site_info.append(page_info)
-        self.soupy_data = ""
-
-
-    def write_to_spreadsheet(self, s3_bucket_name, filename):
-        """
-        Write data from self.meta_info to spreadsheet. 
-        """
-
-        path_to_csv_export = filename.split(".")[0] + "." + filename.split(".")[1] + ".enhanced.csv"
-        
-        # open the file in the write mode
-        self.csv_output = open("mine_mention_tags.csv", 'w')
-
-        # create the csv writer
-        writer = csv.writer(self.csv_output, quoting=csv.QUOTE_NONNUMERIC)
-
-        # write header row to the csv file
-        row = ['mention_identifier', 'page_name', 'file_name', 'page_title', 'page_description', 'keywords']
-        writer.writerow(row)
-
-        # write meta data
-        for dex in self.site_info:
-            row = [
-                dex['mention_identifier'], 
-                dex['name'], 
-                dex['filename'],
-                dex['title'],
-                dex['description'],
-                dex['keywords']
-            ]
-            writer.writerow(row)
-
-        # close the file
-        self.csv_output.close()
-        
-        # Save to S3
-        s3 = boto3.resource('s3')
-        s3.Bucket(s3_bucket_name).upload_file("mine_mention_tags.csv", path_to_csv_export)
-        os.remove("mine_mention_tags.csv")
-
-
-    def add_necessary_tags(self, info_dict, needed_tags):
-        """
-        This method insures that missing tags have a null value
-        before they are written to the output spreadhseet.
-        """
-        for key in needed_tags:
-            if key not in info_dict:
-                info_dict[key] = " "
-        return info_dict
+    return latest_events_url
 
 
 @op(
@@ -161,11 +28,25 @@ class ContentAuditor:
         "gdelt_client"
     }
 )
-def mine_gdelt_events(context):
+def mine_gdelt_events(context, latest_events_url):
+    df_latest_events = gdelt_miners.mine_latest_events(latest_events_url)
+    context.log.info("Mined : " + str(len(df_latest_events)) + " events")
+
+    return df_latest_events
+
+
+@op(
+    required_resource_keys = {
+        "aws_client",
+        "gdelt_client"
+    }
+)
+def save_gdelt_events(context, df_latest_events, latest_events_url):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+    latest_events_s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events)
+    context.log.info("Saved latest events to : " + latest_events_s3_object_location)
 
-    s3_object_location = gdelt_miners.get_latest_events(s3_bucket_name)
-    return s3_object_location
+    return latest_events_s3_object_location
 
 
 @op(
@@ -174,16 +55,11 @@ def mine_gdelt_events(context):
         "gdelt_client"
     }
 )
-def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
+def materialize_gdelt_mining_asset(context, df_latest_events, latest_gdelt_events_s3_location):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     # Extracting which file we're materializing
     filename = latest_gdelt_events_s3_location.splitlines()[-1]
-
-    # Getting csv file and transform to pandas dataframe
-    s3 = boto3.resource('s3')
-    obj = s3.Object(s3_bucket_name, filename)
-    df_gdelt_events = pd.read_csv(StringIO(obj.get()['Body'].read().decode('utf-8')), sep='\t')
     
     # Materialize asset
     yield AssetMaterialization(
@@ -191,10 +67,10 @@ def materialize_gdelt_mining_asset(context, latest_gdelt_events_s3_location):
         description = "List of events mined on GDELT",
         metadata={
             "path": "s3://" + s3_bucket_name + "/" + filename,
-            "rows": df_gdelt_events.index.size
+            "rows": df_latest_events.index.size
         }
     )
-    yield Output(df_gdelt_events)
+    yield Output(df_latest_events)
 
 
 @op(

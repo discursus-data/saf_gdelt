@@ -17,6 +17,7 @@ from content_auditor import ContentAuditor
 )
 def get_latest_events_url(context):
     latest_events_url = gdelt_miners.get_latest_events_url()
+    context.log.info("Mining from : " + latest_events_url)
 
     return latest_events_url
 
@@ -29,6 +30,7 @@ def get_latest_events_url(context):
 )
 def mine_gdelt_events(context, latest_events_url):
     df_latest_events = gdelt_miners.mine_latest_events(latest_events_url)
+    context.log.info("Mined : " + str(len(df_latest_events)) + " events")
 
     return df_latest_events
 
@@ -41,8 +43,8 @@ def mine_gdelt_events(context, latest_events_url):
 )
 def save_gdelt_events(context, df_latest_events, latest_events_url):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
-
     latest_events_s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events)
+    context.log.info("Saved latest events to : " + latest_events_s3_object_location)
 
     return latest_events_s3_object_location
 
