@@ -13,27 +13,18 @@ from content_auditor import ContentAuditor
     required_resource_keys = {
         "aws_client",
         "gdelt_client"
-    },
-    out = {
-        "df_latest_events": Out(), 
-        "latest_events_filedate": Out(), 
-        "latest_events_filename_csv": Out()
     }
 )
 def mine_gdelt_events(context):
     df_latest_events, latest_events_filedate, latest_events_filename_csv = gdelt_miners.get_latest_events()
 
-    return df_latest_events, latest_events_filedate, latest_events_filename_csv
+    return (df_latest_events, latest_events_filedate, latest_events_filename_csv)
 
 
 @op(
     required_resource_keys = {
         "aws_client",
         "gdelt_client"
-    },
-    out = {
-        "df_latest_events": Out(), 
-        "s3_object_location": Out()
     }
 )
 def save_gdelt_events(context, df_latest_events, latest_events_filedate, latest_events_filename_csv):
@@ -41,7 +32,7 @@ def save_gdelt_events(context, df_latest_events, latest_events_filedate, latest_
 
     df_latest_events, s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events, latest_events_filedate, latest_events_filename_csv)
 
-    return df_latest_events, s3_object_location
+    return (df_latest_events, s3_object_location)
 
 
 @op(
