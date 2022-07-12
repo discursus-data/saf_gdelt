@@ -43,7 +43,7 @@ def mine_latest_events(context, latest_events_url):
 )
 def save_gdelt_events(context, df_latest_events, latest_events_url):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
-    latest_events_s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events)
+    latest_events_s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events, latest_events_url)
     context.log.info("Saved latest events to : " + latest_events_s3_object_location)
 
     return latest_events_s3_object_location

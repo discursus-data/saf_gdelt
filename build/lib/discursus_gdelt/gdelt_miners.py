@@ -42,8 +42,10 @@ def save_latest_events(s3_bucket_name, df_latest_events, latest_events_url):
     #Save gdelt data to S3
     print("Copying to S3")
     s3 = boto3.resource('s3')
+    csv_buffer = StringIO()
+    df_latest_events.to_csv(csv_buffer, index = False)
     latest_events_s3_object_location = 'sources/gdelt/' + latest_events_filedate + '/' + latest_events_filename_csv
-    s3.Object(s3_bucket_name, latest_events_s3_object_location).put(Body = open(latest_events_filename_csv, 'rb'))
+    s3.Object(s3_bucket_name, latest_events_s3_object_location).put(Body=csv_buffer.getvalue())
     print("Saved latest events to S3: " + latest_events_s3_object_location)
 
     return latest_events_s3_object_location
