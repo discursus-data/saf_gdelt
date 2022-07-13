@@ -1,5 +1,5 @@
 # discursus_gdelt
-GDELT mining package for the discursus core project
+GDELT mining package for the discursus framework
 
 # How to use this package
 ## Core Framework

@@ -3,76 +3,99 @@ from dagster_shell import create_shell_command_op
 from dagster import file_relative_path
 
 import boto3
+from urllib.request import urlopen, urlretrieve
+import zipfile
 from io import StringIO
 import pandas as pd
 
-from discursus_gdelt import gdelt_miners
 from discursus_gdelt import content_auditor
 
-@op(
-    required_resource_keys = {
-        "aws_client",
-        "gdelt_client"
-    }
-)
+######################
+# MINING OPS
+######################
+# Op to fetch the latest url of GDELT data files
+@op
 def get_latest_events_url(context):
-    latest_events_url = gdelt_miners.get_latest_events_url()
+    context.log.info("Get meta info from GDELT")
+
+    latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
+    latest_updates_text = str(urlopen(latest_updates_url).read())
+    latest_events_url = latest_updates_text.split('\\n')[0].split(' ')[2]
+    latest_events_url = gdelt_mining_functions.get_latest_events_url()
+
     context.log.info("Mining from : " + latest_events_url)
 
     return latest_events_url
 
 
-@op(
-    required_resource_keys = {
-        "aws_client",
-        "gdelt_client"
-    }
-)
+# Op to mine the latest events from GDELT
+@op
 def mine_latest_events(context, latest_events_url):
-    df_latest_events = gdelt_miners.mine_latest_events(latest_events_url)
+    context.log.info("Downloading and extracting latest events")
+    
+    latest_events_filename_zip = latest_events_url.split('gdeltv2/')[1]
+    latest_events_filename_csv = latest_events_filename_zip.split('.zip')[0]
+
+    urlretrieve(latest_events_url, latest_events_filename_zip)
+    with zipfile.ZipFile(latest_events_filename_zip, 'r') as zip_ref:
+        zip_ref.extractall('.')
+    df_latest_events  = pd.read_csv(latest_events_filename_csv, sep='\t')
+
     context.log.info("Mined : " + str(len(df_latest_events)) + " events")
 
     return df_latest_events
 
 
-@op(
-    required_resource_keys = {
-        "aws_client",
-        "gdelt_client"
-    }
-)
-def save_gdelt_events(context, df_latest_events, latest_events_url):
-    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
-    latest_events_s3_object_location = gdelt_miners.save_latest_events(s3_bucket_name, df_latest_events, latest_events_url)
-    context.log.info("Saved latest events to : " + latest_events_s3_object_location)
-
-    return latest_events_s3_object_location
-
-
-@op(
-    required_resource_keys = {
-        "aws_client",
-        "gdelt_client"
-    }
-)
-def materialize_gdelt_mining_asset(context, df_latest_events, latest_gdelt_events_s3_location):
-    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
-
-    # Extracting which file we're materializing
-    filename = latest_gdelt_events_s3_location.splitlines()[-1]
+# Op to mine the latest mentions from GDELT
+@op
+def mine_latest_mentions(context, latest_mentions_url):
+    context.log.info("Downloading and extracting latest mentions")
     
-    # Materialize asset
-    yield AssetMaterialization(
-        asset_key = ["sources", "gdelt_events"],
-        description = "List of events mined on GDELT",
-        metadata={
-            "path": "s3://" + s3_bucket_name + "/" + filename,
-            "rows": df_latest_events.index.size
-        }
-    )
-    yield Output(df_latest_events)
+    latest_mentions_filename_zip = latest_mentions_url.split('gdeltv2/')[1]
+    latest_mentions_filename_csv = latest_mentions_filename_zip.split('.zip')[0]
+
+    urlretrieve(latest_mentions_url, latest_mentions_filename_zip)
+    with zipfile.ZipFile(latest_mentions_filename_zip, 'r') as zip_ref:
+        zip_ref.extractall('.')
+    df_latest_mentions  = pd.read_csv(latest_mentions_filename_csv, sep='\t')
+
+    context.log.info("Mined : " + str(len(df_latest_mentions)) + " mentions")
+
+    return df_latest_mentions
 
 
+
+######################
+# MANIPULATION OPS
+######################
+# Op to filter the latest events from GDELT using the passed configs
+@op(
+    required_resource_keys = {
+        "gdelt_client"
+    }
+)
+def filter_latest_events(context, df_latest_events):
+    context.log.info("Filtering latest events")
+    
+    event_code = context.resources.gdelt_client.get_event_code()
+    countries = context.resources.gdelt_client.get_countries()
+
+    df_latest_events_filtered = pd.DataFrame().reindex_like(df_latest_events)
+
+    for event in df_latest_events:
+        if int(event[28]) == event_code:
+            if countries:
+                if str(event[53]) in countries:
+                    df_latest_events_filtered.append(event)
+            else:
+                df_latest_events_filtered.append(event)
+
+    context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
+
+    return df_latest_events_filtered
+
+
+# Op to get the meta data from a list of urls
 @op(
     required_resource_keys = {
         "aws_client",
@@ -108,10 +131,66 @@ def enhance_articles(context, latest_gdelt_events_s3_location):
     return df_gdelt_enhanced_articles
 
 
+
+
+######################
+# SAVINGS OPS
+######################
+# Op to save the latest GDELT events to S3
 @op(
     required_resource_keys = {
-        "aws_client",
-        "gdelt_client"
+        "aws_client"
+    }
+)
+def save_gdelt_events(context, df_latest_events, latest_events_url):
+    context.log.info("Saving latest events to S3")
+
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
+    latest_events_filename_zip = latest_events_url.split('gdeltv2/')[1]
+    latest_events_filename_csv = latest_events_filename_zip.split('.zip')[0]
+    latest_events_filedate = latest_events_filename_csv[0:8]
+    
+    s3 = boto3.resource('s3')
+    csv_buffer = StringIO()
+    df_latest_events.to_csv(csv_buffer, index = False)
+    latest_events_s3_object_location = 'sources/gdelt/' + latest_events_filedate + '/' + latest_events_filename_csv
+    s3.Object(s3_bucket_name, latest_events_s3_object_location).put(Body=csv_buffer.getvalue())
+
+
+    context.log.info("Saved latest events to : " + latest_events_s3_object_location)
+
+    return latest_events_s3_object_location
+
+
+# Op to materialize the latest GDELT events as a data asset in Dagster
+@op(
+    required_resource_keys = {
+        "aws_client"
+    }
+)
+def materialize_gdelt_mining_asset(context, df_latest_events, latest_gdelt_events_s3_location):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
+    # Extracting which file we're materializing
+    filename = latest_gdelt_events_s3_location.splitlines()[-1]
+    
+    # Materialize asset
+    yield AssetMaterialization(
+        asset_key = ["sources", "gdelt_events"],
+        description = "List of events mined on GDELT",
+        metadata={
+            "path": "s3://" + s3_bucket_name + "/" + filename,
+            "rows": df_latest_events.index.size
+        }
+    )
+    yield Output(df_latest_events)
+
+
+# Op to materialize the url metadata as a data asset in Dagster
+@op(
+    required_resource_keys = {
+        "aws_client"
     }
 )
 def materialize_enhanced_articles_asset(context, df_gdelt_enhanced_articles, latest_gdelt_events_s3_location):

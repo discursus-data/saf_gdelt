@@ -1,8 +1,8 @@
+LICENSE
 README.md
 setup.py
 discursus_gdelt/__init__.py
 discursus_gdelt/content_auditor.py
-discursus_gdelt/gdelt_miners.py
 discursus_gdelt/gdelt_mining_ops.py
 discursus_gdelt/gdelt_resources.py
 discursus_gdelt.egg-info/PKG-INFO

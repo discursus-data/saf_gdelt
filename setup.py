@@ -4,7 +4,7 @@ setup(
     name='discursus_gdelt',
     packages=find_packages(include=['discursus_gdelt']),
     version='0.1.0',
-    description='GDELT mining package for the discursus platform',
+    description='GDELT mining package for the discursus framework',
     author='Olivier Dupuis',
     license='MIT',
 )
