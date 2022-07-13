@@ -21,7 +21,6 @@ def get_latest_events_url(context):
     latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
     latest_updates_text = str(urlopen(latest_updates_url).read())
     latest_events_url = latest_updates_text.split('\\n')[0].split(' ')[2]
-    latest_events_url = gdelt_mining_functions.get_latest_events_url()
 
     context.log.info("Mining from : " + latest_events_url)
 
