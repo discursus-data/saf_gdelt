@@ -79,15 +79,13 @@ def filter_latest_events(context, df_latest_events):
     event_code = int(context.resources.gdelt_client.get_event_code())
     countries = context.resources.gdelt_client.get_countries()
 
-    df_latest_events_filtered = df_latest_events.iloc[:0].copy()
+    df_latest_events_filtered = df_latest_events[0:0]
 
     for index, event in df_latest_events.iterrows():
         if int(event[28]) == event_code:
-            context.log.info(str(event[53]))
             if countries:
                 if str(event[53]) in countries:
                     df_latest_events_filtered.append(event)
-                    context.log.info(str(len(df_latest_events_filtered)))
             else:
                 df_latest_events_filtered.append(event)
 
