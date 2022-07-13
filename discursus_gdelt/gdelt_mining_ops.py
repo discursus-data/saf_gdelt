@@ -81,7 +81,7 @@ def filter_latest_events(context, df_latest_events):
 
     df_latest_events_filtered = pd.DataFrame().reindex_like(df_latest_events)
 
-    for event in df_latest_events:
+    for index, event in df_latest_events.iterrows():
         if int(event[28]) == event_code:
             if countries:
                 if str(event[53]) in countries:
