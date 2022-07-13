@@ -82,7 +82,6 @@ def filter_latest_events(context, df_latest_events):
     df_latest_events_filtered = df_latest_events.iloc[:0].copy()
 
     for index, event in df_latest_events.iterrows():
-        context.log.info(int(event[28]))
         if int(event[28]) == event_code:
             context.log.info(str(event[53]))
             if countries:
