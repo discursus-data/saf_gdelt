@@ -84,14 +84,14 @@ def filter_latest_events(context, df_latest_events):
     if filter_condition_event_code:
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
-                df_latest_events_filtered.iloc[:, 28] == filter_condition_event_code
+                df_latest_events_filtered.iloc[28] == filter_condition_event_code
             ].index, 
             inplace = True
         )
     if filter_condition_countries:
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
-                df_latest_events_filtered.iloc[:, 53] == filter_condition_countries
+                df_latest_events_filtered.iloc[53] == filter_condition_countries
             ].index, 
             inplace = True
         )
