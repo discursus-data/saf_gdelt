@@ -76,18 +76,25 @@ def mine_latest_mentions(context, latest_mentions_url):
 def filter_latest_events(context, df_latest_events):
     context.log.info("Filtering latest events")
     
-    event_code = int(context.resources.gdelt_client.get_event_code())
-    countries = context.resources.gdelt_client.get_countries()
+    filter_condition_event_code = str(context.resources.gdelt_client.get_event_code())
+    filter_condition_countries = str(context.resources.gdelt_client.get_countries())
 
-    df_latest_events_filtered = df_latest_events[0:0]
+    df_latest_events_filtered = df_latest_events
 
-    for index, event in df_latest_events.iterrows():
-        if int(event[28]) == event_code:
-            if countries:
-                if str(event[53]) in countries:
-                    df_latest_events_filtered.append(event)
-            else:
-                df_latest_events_filtered.append(event)
+    if filter_condition_event_code:
+        df_latest_events_filtered.drop(
+            df_latest_events_filtered[
+                df_latest_events_filtered[28] == filter_condition_event_code
+            ].index, 
+            inplace = True
+        )
+    if filter_condition_countries:
+        df_latest_events_filtered.drop(
+            df_latest_events_filtered[
+                df_latest_events_filtered[53] == filter_condition_countries
+            ].index, 
+            inplace = True
+        )
 
     context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
 
