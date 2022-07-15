@@ -77,15 +77,19 @@ def filter_latest_events(context, df_latest_events):
     context.log.info("Filtering latest events")
     
     filter_condition_event_code = context.resources.gdelt_client.get_event_code()
+    context.log.info(type(filter_condition_event_code))
     filter_condition_countries = context.resources.gdelt_client.get_countries()
+    context.log.info(type(filter_condition_countries))
 
     df_latest_events_filtered = df_latest_events
+    context.log.info(type(df_latest_events_filtered.iloc[:,28]))
+    context.log.info(type(df_latest_events_filtered.iloc[:,53]))
 
     if filter_condition_event_code:
         context.log.info("Filtering latest events by events: " + str(filter_condition_event_code))
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
-                df_latest_events_filtered.iloc[:,28] == filter_condition_event_code
+                df_latest_events_filtered.iloc[:,28] != filter_condition_event_code
             ].index, 
             inplace = True)
         context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
@@ -93,7 +97,7 @@ def filter_latest_events(context, df_latest_events):
         context.log.info("Filtering latest events by countries: " + str(filter_condition_countries))
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
-                df_latest_events_filtered.iloc[:,53] == filter_condition_countries
+                df_latest_events_filtered.iloc[:,53] not in filter_condition_countries
             ].index, 
             inplace = True)
         context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
