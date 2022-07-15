@@ -38,7 +38,7 @@ def mine_latest_events(context, latest_events_url):
     urlretrieve(latest_events_url, latest_events_filename_zip)
     with zipfile.ZipFile(latest_events_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
-    df_latest_events  = pd.read_csv(latest_events_filename_csv, sep='\t')
+    df_latest_events  = pd.read_csv(latest_events_filename_csv, sep = '\t', header = None)
 
     context.log.info("Mined : " + str(len(df_latest_events)) + " events")
 
@@ -56,7 +56,7 @@ def mine_latest_mentions(context, latest_mentions_url):
     urlretrieve(latest_mentions_url, latest_mentions_filename_zip)
     with zipfile.ZipFile(latest_mentions_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
-    df_latest_mentions  = pd.read_csv(latest_mentions_filename_csv, sep='\t')
+    df_latest_mentions  = pd.read_csv(latest_mentions_filename_csv, sep = '\t', header = None)
 
     context.log.info("Mined : " + str(len(df_latest_mentions)) + " mentions")
 
