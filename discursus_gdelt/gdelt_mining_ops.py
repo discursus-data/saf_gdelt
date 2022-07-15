@@ -190,13 +190,40 @@ def save_gdelt_events(context, df_latest_events, latest_events_url):
     return latest_events_s3_object_location
 
 
+# Op to save the latest GDELT mentions to S3
+@op(
+    required_resource_keys = {
+        "aws_client"
+    }
+)
+def save_gdelt_mentions(context, df_latest_mentions, latest_mentions_url):
+    context.log.info("Saving latest mentions to S3")
+
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
+    latest_mentions_filename_zip = latest_mentions_url.split('gdeltv2/')[1]
+    latest_mentions_filename_csv = latest_mentions_filename_zip.split('.zip')[0]
+    latest_mentions_filedate = latest_mentions_filename_csv[0:8]
+    
+    s3 = boto3.resource('s3')
+    csv_buffer = StringIO()
+    df_latest_mentions.to_csv(csv_buffer, index = False)
+    latest_mentions_s3_object_location = 'sources/gdelt/' + latest_mentions_filedate + '/' + latest_mentions_filename_csv
+    s3.Object(s3_bucket_name, latest_mentions_s3_object_location).put(Body=csv_buffer.getvalue())
+
+
+    context.log.info("Saved latest mentions to : " + latest_mentions_s3_object_location)
+
+    return latest_mentions_s3_object_location
+
+
 # Op to materialize the latest GDELT events as a data asset in Dagster
 @op(
     required_resource_keys = {
         "aws_client"
     }
 )
-def materialize_gdelt_mining_asset(context, latest_events_s3_object_location, df_latest_events_filtered):
+def materialize_gdelt_events_asset(context, latest_events_s3_object_location, df_latest_events_filtered):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     # Extracting which file we're materializing
@@ -212,6 +239,30 @@ def materialize_gdelt_mining_asset(context, latest_events_s3_object_location, df
         }
     )
     yield Output(df_latest_events_filtered)
+
+
+# Op to materialize the latest GDELT mentions as a data asset in Dagster
+@op(
+    required_resource_keys = {
+        "aws_client"
+    }
+)
+def materialize_gdelt_mentions_asset(context, latest_mentions_s3_object_location, df_latest_mentions_filtered):
+    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
+
+    # Extracting which file we're materializing
+    filename = latest_mentions_s3_object_location.splitlines()[-1]
+    
+    # Materialize asset
+    yield AssetMaterialization(
+        asset_key = ["sources", "gdelt_mentions"],
+        description = "List of mentions mined on GDELT",
+        metadata={
+            "path": "s3://" + s3_bucket_name + "/" + filename,
+            "rows": df_latest_mentions_filtered.index.size
+        }
+    )
+    yield Output(df_latest_mentions_filtered)
 
 
 # Op to materialize the url metadata as a data asset in Dagster
