@@ -33,7 +33,9 @@ def mine_latest_events(context, latest_events_url):
     context.log.info("Downloading and extracting latest events")
     
     latest_events_filename_zip = latest_events_url.split('gdeltv2/')[1]
+    context.log.info("Latest events zip filename is : " + latest_events_filename_zip)
     latest_events_filename_csv = latest_events_filename_zip.split('.zip')[0]
+    context.log.info("Latest events csv filename is : " + latest_events_filename_csv)
 
     urlretrieve(latest_events_url, latest_events_filename_zip)
     with zipfile.ZipFile(latest_events_filename_zip, 'r') as zip_ref:
@@ -47,13 +49,15 @@ def mine_latest_events(context, latest_events_url):
 
 # Op to mine the latest mentions from GDELT
 @op
-def mine_latest_mentions(context, latest_mentions_url):
+def mine_latest_mentions(context, latest_events_url):
     context.log.info("Downloading and extracting latest mentions")
     
-    latest_mentions_filename_zip = latest_mentions_url.split('gdeltv2/')[1]
+    latest_mentions_filename_zip = latest_events_url.split('gdeltv2/')[1]
+    context.log.info("Latest mentions zip filename is : " + latest_mentions_filename_zip)
     latest_mentions_filename_csv = latest_mentions_filename_zip.split('.zip')[0]
+    context.log.info("Latest mentions csv filename is : " + latest_mentions_filename_csv)
 
-    urlretrieve(latest_mentions_url, latest_mentions_filename_zip)
+    urlretrieve(latest_events_url, latest_mentions_filename_zip)
     with zipfile.ZipFile(latest_mentions_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
     df_latest_mentions  = pd.read_csv(latest_mentions_filename_csv, sep = '\t', header = None)
@@ -103,7 +107,7 @@ def filter_latest_mentions(context, df_latest_mentions, df_latest_events_filtere
     
     df_latest_mentions_filtered = df_latest_mentions
     df_latest_mentions_filtered = df_latest_mentions_filtered[(df_latest_mentions_filtered.iloc[:,0].isin(df_latest_events_filtered.iloc[:,0]))]
-    context.log.info("We now have " + str(len(df_latest_mentions_filtered)) + " remaining events out of " + str(len(df_latest_mentions)))
+    context.log.info("We now have " + str(len(df_latest_mentions_filtered)) + " remaining mentions out of " + str(len(df_latest_mentions)))
 
     return df_latest_mentions_filtered
 
