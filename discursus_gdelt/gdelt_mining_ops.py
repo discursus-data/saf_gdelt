@@ -13,18 +13,28 @@ from discursus_gdelt import content_auditor
 ######################
 # MINING OPS
 ######################
-# Op to fetch the latest url of GDELT data files
+# Op to fetch the latest url of GDELT event files
 @op
 def get_latest_events_url(context):
-    context.log.info("Get meta info from GDELT")
-
     latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
     latest_updates_text = str(urlopen(latest_updates_url).read())
     latest_events_url = latest_updates_text.split('\\n')[0].split(' ')[2]
 
-    context.log.info("Mining from : " + latest_events_url)
+    context.log.info("Mining events from : " + latest_events_url)
 
     return latest_events_url
+
+
+# Op to fetch the latest url of GDELT mentions files
+@op
+def get_latest_mentions_url(context):
+    latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
+    latest_updates_text = str(urlopen(latest_updates_url).read())
+    latest_mentions_url = latest_updates_text.split('\\n')[1].split(' ')[2]
+
+    context.log.info("Mining mentions from : " + latest_mentions_url)
+
+    return latest_mentions_url
 
 
 # Op to mine the latest events from GDELT
@@ -49,15 +59,15 @@ def mine_latest_events(context, latest_events_url):
 
 # Op to mine the latest mentions from GDELT
 @op
-def mine_latest_mentions(context, latest_events_url):
+def mine_latest_mentions(context, latest_mentions_url):
     context.log.info("Downloading and extracting latest mentions")
     
-    latest_mentions_filename_zip = latest_events_url.split('gdeltv2/')[1]
+    latest_mentions_filename_zip = latest_mentions_url.split('gdeltv2/')[1]
     context.log.info("Latest mentions zip filename is : " + latest_mentions_filename_zip)
     latest_mentions_filename_csv = latest_mentions_filename_zip.split('.zip')[0]
     context.log.info("Latest mentions csv filename is : " + latest_mentions_filename_csv)
 
-    urlretrieve(latest_events_url, latest_mentions_filename_zip)
+    urlretrieve(latest_mentions_url, latest_mentions_filename_zip)
     with zipfile.ZipFile(latest_mentions_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
     df_latest_mentions  = pd.read_csv(latest_mentions_filename_csv, sep = '\t', header = None)
