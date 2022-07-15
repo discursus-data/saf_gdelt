@@ -82,7 +82,8 @@ def filter_latest_events(context, df_latest_events):
     df_latest_events_filtered = df_latest_events
 
     if filter_condition_event_code:
-        context.log.info("Filtering latest events by event code")
+        context.log.info("Filtering latest events by event code: " + str(filter_condition_event_code))
+        context.log.info(df_latest_events_filtered.iloc[:,28])
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
                 df_latest_events_filtered.iloc[:,28] == filter_condition_event_code
@@ -90,7 +91,8 @@ def filter_latest_events(context, df_latest_events):
             inplace = True)
         context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
     if filter_condition_countries:
-        context.log.info("Filtering latest events by countries")
+        context.log.info("Filtering latest events by countries: " + str(filter_condition_countries))
+        context.log.info(df_latest_events_filtered.iloc[:,53])
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
                 df_latest_events_filtered.iloc[:,53] == filter_condition_countries
