@@ -166,11 +166,11 @@ def save_gdelt_events(context, df_latest_events, latest_events_url):
         "aws_client"
     }
 )
-def materialize_gdelt_mining_asset(context, df_latest_events, latest_gdelt_events_s3_location):
+def materialize_gdelt_mining_asset(context, latest_events_s3_object_location, df_latest_events_filtered):
     s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
 
     # Extracting which file we're materializing
-    filename = latest_gdelt_events_s3_location.splitlines()[-1]
+    filename = latest_events_s3_object_location.splitlines()[-1]
     
     # Materialize asset
     yield AssetMaterialization(
@@ -178,10 +178,10 @@ def materialize_gdelt_mining_asset(context, df_latest_events, latest_gdelt_event
         description = "List of events mined on GDELT",
         metadata={
             "path": "s3://" + s3_bucket_name + "/" + filename,
-            "rows": df_latest_events.index.size
+            "rows": df_latest_events_filtered.index.size
         }
     )
-    yield Output(df_latest_events)
+    yield Output(df_latest_events_filtered)
 
 
 # Op to materialize the url metadata as a data asset in Dagster
