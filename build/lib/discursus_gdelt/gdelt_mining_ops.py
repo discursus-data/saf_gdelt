@@ -76,14 +76,13 @@ def mine_latest_mentions(context, latest_mentions_url):
 def filter_latest_events(context, df_latest_events):
     context.log.info("Filtering latest events")
     
-    filter_condition_event_code = str(context.resources.gdelt_client.get_event_code())
-    filter_condition_countries = str(context.resources.gdelt_client.get_countries())
+    filter_condition_event_code = context.resources.gdelt_client.get_event_code()
+    filter_condition_countries = context.resources.gdelt_client.get_countries()
 
     df_latest_events_filtered = df_latest_events
 
     if filter_condition_event_code:
-        context.log.info("Filtering latest events by event code: " + str(filter_condition_event_code))
-        context.log.info(df_latest_events_filtered.iloc[:,28])
+        context.log.info("Filtering latest events by events: " + str(filter_condition_event_code))
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
                 df_latest_events_filtered.iloc[:,28] == filter_condition_event_code
@@ -92,7 +91,6 @@ def filter_latest_events(context, df_latest_events):
         context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
     if filter_condition_countries:
         context.log.info("Filtering latest events by countries: " + str(filter_condition_countries))
-        context.log.info(df_latest_events_filtered.iloc[:,53])
         df_latest_events_filtered.drop(
             df_latest_events_filtered[
                 df_latest_events_filtered.iloc[:,53] == filter_condition_countries
