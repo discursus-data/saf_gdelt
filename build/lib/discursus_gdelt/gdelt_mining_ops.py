@@ -86,7 +86,7 @@ def filter_latest_events(context, df_latest_events):
         context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
     if filter_condition_countries:
         context.log.info("Filtering latest events by countries: " + str(filter_condition_countries))
-        df_latest_events_filtered = df_latest_events_filtered[(df_latest_events_filtered.iloc[:,53] in filter_condition_countries)]
+        df_latest_events_filtered = df_latest_events_filtered[(df_latest_events_filtered.iloc[:,53].isin(filter_condition_countries))]
         context.log.info("We now have " + str(len(df_latest_events_filtered)) + " remaining events out of " + str(len(df_latest_events)))
 
     return df_latest_events_filtered
