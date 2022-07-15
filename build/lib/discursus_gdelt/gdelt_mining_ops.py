@@ -92,6 +92,22 @@ def filter_latest_events(context, df_latest_events):
     return df_latest_events_filtered
 
 
+# Op to filter the latest mentions from GDELT using the filtered list of events
+@op(
+    required_resource_keys = {
+        "gdelt_client"
+    }
+)
+def filter_latest_mentions(context, df_latest_mentions, df_latest_events_filtered):
+    context.log.info("Filtering latest mentions")
+    
+    df_latest_mentions_filtered = df_latest_mentions
+    df_latest_mentions_filtered = df_latest_mentions_filtered[(df_latest_mentions_filtered.iloc[:,0].isin(df_latest_events_filtered.iloc[:,0]))]
+    context.log.info("We now have " + str(len(df_latest_mentions_filtered)) + " remaining events out of " + str(len(df_latest_mentions)))
+
+    return df_latest_mentions_filtered
+
+
 # Op to get the meta data from a list of urls
 @op(
     required_resource_keys = {
