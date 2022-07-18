@@ -8,7 +8,6 @@ import zipfile
 from io import StringIO
 import pandas as pd
 
-from discursus_gdelt import content_auditor
 
 ######################
 # MINING OPS
@@ -120,42 +119,6 @@ def filter_latest_mentions(context, df_latest_mentions, df_latest_events_filtere
     context.log.info("We now have " + str(len(df_latest_mentions_filtered)) + " remaining mentions out of " + str(len(df_latest_mentions)))
 
     return df_latest_mentions_filtered
-
-
-# Op to get the meta data from a list of urls
-@op(
-    required_resource_keys = {
-        "aws_client",
-        "gdelt_client"
-    }
-)
-def enhance_articles(context, latest_gdelt_events_s3_location):
-    s3_bucket_name = context.resources.aws_client.get_s3_bucket_name()
-    event_code = context.resources.gdelt_client.get_event_code()
-    countries = context.resources.gdelt_client.get_countries()
-
-    # Extracting which file we're enhancing
-    filename = latest_gdelt_events_s3_location.splitlines()[-1]
-
-    # Get a unique list of urls to enhance
-    context.log.info("Targeting the following events: " + str(event_code))
-    context.log.info("Targeting the following countries: " + str(countries))
-    content_bot = content_auditor.ContentAuditor(s3_bucket_name, filename)
-    content_bot.get_list_of_urls(event_code, countries)
-
-    # Enhance urls
-    context.log.info("Enhancing " + str(len(content_bot.article_urls)) + " articles")
-    content_bot.read_url()
-
-    # Create dataframe
-    df_gdelt_enhanced_articles = pd.DataFrame (content_bot.site_info, columns = ['mention_identifier', 'page_name', 'file_name', 'page_title', 'page_description', 'keywords'])
-    context.log.info("Enhanced " + str(df_gdelt_enhanced_articles['mention_identifier'].size) + " articles")
-
-    # Save enhanced urls to S3
-    context.log.info("Exporting to S3")
-    content_bot.write_to_spreadsheet(s3_bucket_name, filename)
-
-    return df_gdelt_enhanced_articles
 
 
 
