@@ -11,28 +11,33 @@ import pandas as pd
 ######################
 # MINING OPS
 ######################
-# Op to fetch the latest url of GDELT event files
+# Op to fetch the latest url of GDELT asset
 @op
-def get_latest_events_url(context):
+def get_url_to_latest_asset(context, gdelt_asset):
     latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
     latest_updates_text = str(urlopen(latest_updates_url).read())
-    latest_events_url = latest_updates_text.split('\\n')[0].split(' ')[2]
 
-    context.log.info("Mining events from : " + latest_events_url)
+    if gdelt_asset == "events": 
+        latest_asset_url = latest_updates_text.split('\\n')[0].split(' ')[2]
+    elif gdelt_asset == "events":
+        latest_asset_url = latest_updates_text.split('\\n')[1].split(' ')[2]
 
-    return latest_events_url
+    context.log.info("Mining asset from : " + latest_asset_url)
+
+    return latest_asset_url
 
 
-# Op to fetch the latest url of GDELT mentions files
+# Op to build a file path for saving of data assets
 @op
-def get_latest_mentions_url(context):
-    latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
-    latest_updates_text = str(urlopen(latest_updates_url).read())
-    latest_mentions_url = latest_updates_text.split('\\n')[1].split(' ')[2]
+def build_file_path(context, gdelt_asset_url):
+    gdelt_asset_filename_zip = str(gdelt_asset_url).split('gdeltv2/')[1]
+    gdelt_asset_filename_csv = gdelt_asset_filename_zip.split('.zip')[0]
+    gdelt_asset_filedate = gdelt_asset_filename_csv[0:8]
+    gdelt_asset_file_path = 'sources/gdelt/' + gdelt_asset_filedate + '/' + gdelt_asset_filename_csv
 
-    context.log.info("Mining mentions from : " + latest_mentions_url)
+    context.log.info("Will save data asset to this path : " + gdelt_asset_file_path)
 
-    return latest_mentions_url
+    return gdelt_asset_file_path
 
 
 # Op to mine the latest events from GDELT

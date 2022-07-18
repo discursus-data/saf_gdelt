@@ -1,14 +1,36 @@
-# discursus_gdelt
-GDELT mining package for the discursus framework
+# discursus GDELT library
+This library provides [ops](https://docs.dagster.io/concepts/ops-jobs-graphs/ops) to source the [GDELT](https://www.gdeltproject.org/) public data source.
 
-# How to use this package
+## Library description
+The library includes the following ops.
+
+### gdelt_mining_ops.get_latest_events_url
+Bla
+
+### gdelt_mining_ops.get_latest_mentions_url
+Bla
+
+### gdelt_mining_ops.mine_latest_events
+Bla
+
+### gdelt_mining_ops.mine_latest_mentions
+Bla
+
+### gdelt_mining_ops.filter_latest_events
+Bla
+
+### gdelt_mining_ops.filter_latest_mentions
+Bla
+
+
+# How to use this library
 ## Core Framework
 - [Use the core framework](https://github.com/discursus-io/discursus_core)
 - install the library in your Docker file: `RUN pip3 install git+https://github.com/discursus-io/discursus_gdelt@release/0.1`
 
 
 ## Configurations
-### Configure the Package Resource
+### Configure the library Resource
 Create a gdelt configuration file (`gdelt_configs.yamls`) in the `configs` section of the core framwork.
 
 ```
@@ -85,7 +107,7 @@ def mine_gdelt_data():
 
 
 # Development of library
-- Once improvements have been added to package
+- Once improvements have been added to library
 - Compile a new version: `python setup.py bdist_wheel`
 - Commit branch and PR into new release branch
 - Point projects to new release branch
