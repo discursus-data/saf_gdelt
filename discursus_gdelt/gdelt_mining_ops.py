@@ -8,18 +8,16 @@ from io import StringIO
 import pandas as pd
 
 
-######################
-# MINING OPS
-######################
+################
 # Op to fetch the latest url of GDELT asset
 @op
-def get_url_to_latest_asset(context, gdelt_asset):
+def get_url_to_latest_asset(context):
     latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
     latest_updates_text = str(urlopen(latest_updates_url).read())
 
-    if gdelt_asset == "events": 
+    if context.op_config["gdelt_asset"] == "events": 
         latest_asset_url = latest_updates_text.split('\\n')[0].split(' ')[2]
-    elif gdelt_asset == "events":
+    elif context.op_config["gdelt_asset"] == "events":
         latest_asset_url = latest_updates_text.split('\\n')[1].split(' ')[2]
 
     context.log.info("Mining asset from : " + latest_asset_url)
@@ -27,6 +25,7 @@ def get_url_to_latest_asset(context, gdelt_asset):
     return latest_asset_url
 
 
+################
 # Op to build a file path for saving of data assets
 @op
 def build_file_path(context, gdelt_asset_url):
@@ -40,50 +39,27 @@ def build_file_path(context, gdelt_asset_url):
     return gdelt_asset_file_path
 
 
-# Op to mine the latest events from GDELT
+################
+# Op to mine the latest asset from GDELT
 @op
-def mine_latest_events(context, latest_events_url):
-    context.log.info("Downloading and extracting latest events")
+def mine_latest_asset(context, latest_asset_url):
+    context.log.info("Downloading and extracting latest asset")
     
-    latest_events_filename_zip = latest_events_url.split('gdeltv2/')[1]
-    context.log.info("Latest events zip filename is : " + latest_events_filename_zip)
-    latest_events_filename_csv = latest_events_filename_zip.split('.zip')[0]
-    context.log.info("Latest events csv filename is : " + latest_events_filename_csv)
+    latest_asset_filename_zip = latest_asset_url.split('gdeltv2/')[1]
+    latest_asset_filename_csv = latest_asset_filename_zip.split('.zip')[0]
 
-    urlretrieve(latest_events_url, latest_events_filename_zip)
-    with zipfile.ZipFile(latest_events_filename_zip, 'r') as zip_ref:
+    urlretrieve(latest_asset_url, latest_asset_filename_zip)
+    with zipfile.ZipFile(latest_asset_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
-    df_latest_events  = pd.read_csv(latest_events_filename_csv, sep = '\t', header = None)
+    df_latest_asset  = pd.read_csv(latest_asset_filename_csv, sep = '\t', header = None)
 
-    context.log.info("Mined : " + str(len(df_latest_events)) + " events")
+    context.log.info("Mined : " + str(len(df_latest_asset)) + " rows from asset")
 
-    return df_latest_events
-
-
-# Op to mine the latest mentions from GDELT
-@op
-def mine_latest_mentions(context, latest_mentions_url):
-    context.log.info("Downloading and extracting latest mentions")
-    
-    latest_mentions_filename_zip = latest_mentions_url.split('gdeltv2/')[1]
-    context.log.info("Latest mentions zip filename is : " + latest_mentions_filename_zip)
-    latest_mentions_filename_csv = latest_mentions_filename_zip.split('.zip')[0]
-    context.log.info("Latest mentions csv filename is : " + latest_mentions_filename_csv)
-
-    urlretrieve(latest_mentions_url, latest_mentions_filename_zip)
-    with zipfile.ZipFile(latest_mentions_filename_zip, 'r') as zip_ref:
-        zip_ref.extractall('.')
-    df_latest_mentions  = pd.read_csv(latest_mentions_filename_csv, sep = '\t', header = None)
-
-    context.log.info("Mined : " + str(len(df_latest_mentions)) + " mentions")
-
-    return df_latest_mentions
+    return df_latest_asset
 
 
 
-######################
-# MANIPULATION OPS
-######################
+################
 # Op to filter the latest events from GDELT using the passed configs
 @op(
     required_resource_keys = {
@@ -109,6 +85,7 @@ def filter_latest_events(context, df_latest_events):
     return df_latest_events_filtered
 
 
+################
 # Op to filter the latest mentions from GDELT using the filtered list of events
 @op(
     required_resource_keys = {

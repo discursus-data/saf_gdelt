@@ -4,34 +4,37 @@ This library provides [ops](https://docs.dagster.io/concepts/ops-jobs-graphs/ops
 ## Library description
 The library includes the following ops.
 
-### gdelt_mining_ops.get_latest_events_url
-Bla
+### gdelt_mining_ops.get_url_to_latest_asset
+Op to fetch the latest url of GDELT asset
 
-### gdelt_mining_ops.get_latest_mentions_url
-Bla
+### gdelt_mining_ops.build_file_path
+Op to build a file path for saving of data assets
 
-### gdelt_mining_ops.mine_latest_events
-Bla
-
-### gdelt_mining_ops.mine_latest_mentions
-Bla
+### gdelt_mining_ops.mine_latest_asset
+Op to mine the latest asset from GDELT
 
 ### gdelt_mining_ops.filter_latest_events
-Bla
+Op to filter the latest events from GDELT using the passed configs
 
 ### gdelt_mining_ops.filter_latest_mentions
-Bla
+Op to filter the latest mentions from GDELT using the filtered list of events
 
 
 # How to use this library
 ## Core Framework
-- [Use the core framework](https://github.com/discursus-io/discursus_core)
-- install the library in your Docker file: `RUN pip3 install git+https://github.com/discursus-io/discursus_gdelt@release/0.1`
+This library is part of the [discursus Social Analytics OSS Framework](https://github.com/discursus-io/discursus_core). Please visit the repo for more information. And visit us at [discursus.io] for more context on our mission.
 
+## Installation
+We assume you are running a Docker file such as the one we have in the [Core repo](https://github.com/discursus-io/discursus_core/blob/release/0.1/Dockerfile_app.REPLACE).
+
+The only thing you need to add is this line that will load the GDELT library to your instance of the social analytics framework.
+`RUN pip3 install git+https://github.com/discursus-io/discursus_gdelt@release/0.1`
 
 ## Configurations
 ### Configure the library Resource
-Create a gdelt configuration file (`gdelt_configs.yamls`) in the `configs` section of the core framwork.
+The library requires you pass configruations in the form of a yaml file. 
+
+Create a gdelt configuration file (`gdelt_configs.yaml`) in the `configs` section of the core framework.
 
 ```
 resources:
@@ -43,47 +46,9 @@ resources:
         - CA
 ```
 
-### Configure the AWS Resource
-Create a aws configuration file (`aws_configs.yamls`) in the `configs` section of the core framwork.
-
-```
-resources:
-  s3:
-    config:
-      bucket_name: discursus-io
-```
-
-Create a AWS resource file (`aws_resource.py`) in the `resources` section of the core framework.
-
-```
-from dagster import resource, StringSource
-
-class AWSClient:
-    def __init__(self, s3_bucket_name):
-        self._s3_bucket_name = s3_bucket_name
-
-
-    def get_s3_bucket_name(self):
-        return self._s3_bucket_name
-
-
-@resource(
-    config_schema={
-        "resources": {
-            "s3": {
-                "config": {
-                    "bucket_name": StringSource
-                }
-            }
-        }
-    },
-    description="A AWS client.",
-)
-def aws_client(context):
-    return AWSClient(
-        s3_bucket_name = context.resource_config["resources"]["s3"]["config"]["bucket_name"]
-    )
-```
+The example below includes 2 key-value pairs:
+- `event_code` (required): We use that value to filter which events are to be mined from GDELT
+- `countries`: We use those values to filter from which countries events are to be mined.
 
 ## Calling a function
 When you call function (a Dagster op) from the library, you will need to pass the resources you configured.
