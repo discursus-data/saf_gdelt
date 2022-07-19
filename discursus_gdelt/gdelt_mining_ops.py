@@ -58,16 +58,12 @@ def mine_latest_asset(context, latest_asset_url):
 
 ################
 # Op to filter the latest events from GDELT using the passed configs
-@op(
-    required_resource_keys = {
-        "gdelt_client"
-    }
-)
+@op
 def filter_latest_events(context, df_latest_events):
     context.log.info("Filtering latest events")
     
-    filter_condition_event_code = context.resources.gdelt_client.get_event_code()
-    filter_condition_countries = list(context.resources.gdelt_client.get_countries())
+    filter_condition_event_code = context.op_config["filter_event_code"]
+    filter_condition_countries = list(context.op_config["filter_countries"])
     df_latest_events_filtered = df_latest_events
 
     if filter_condition_event_code:
@@ -84,11 +80,7 @@ def filter_latest_events(context, df_latest_events):
 
 ################
 # Op to filter the latest mentions from GDELT using the filtered list of events
-@op(
-    required_resource_keys = {
-        "gdelt_client"
-    }
-)
+@op
 def filter_latest_mentions(context, df_latest_mentions, df_latest_events_filtered):
     context.log.info("Filtering latest mentions")
     

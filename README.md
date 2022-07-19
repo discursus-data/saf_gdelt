@@ -18,7 +18,7 @@ Please refer to the [discursus Social Analytics OSS Framework](https://github.co
 
 
 # Configuring this library
-The library requires you pass configruations in the form of a yaml file. 
+This library requires you pass configruations in the form of a yaml file. 
 
 Create a gdelt configuration file (`gdelt_configs.yaml`) in the `configs` section of the core framework.
 
