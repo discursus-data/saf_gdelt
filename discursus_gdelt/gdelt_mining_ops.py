@@ -1,10 +1,7 @@
-from dagster import op, AssetMaterialization, Output
-from dagster_shell import create_shell_command_op
-from dagster import file_relative_path
+from dagster import op
 
 from urllib.request import urlopen, urlretrieve
 import zipfile
-from io import StringIO
 import pandas as pd
 
 
