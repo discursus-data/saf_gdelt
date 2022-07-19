@@ -10,8 +10,6 @@ Please refer to the [discursus Social Analytics OSS Framework](https://github.co
 
 &nbsp;
 
-&nbsp;
-
 # Library Ops
 The library includes the following ops.
 
@@ -46,16 +44,18 @@ Configurations
 Filters the latest events from GDELT using the passed configs.
 
 Parameters
-- None required.
+- df_latest_events: Output from `mine_latest_asset`
 
 Configurations
-- None required.
+- filter_event_code: Event code to mine (e.g. 14 for protest events)
+- filter_countries: Country codes to mine (e.g. US)
 
 ## gdelt_mining_ops.filter_latest_mentions
 Filters the latest mentions from GDELT using the filtered list of events.
 
 Parameters
-- None required.
+- df_latest_mentions: Output from `mine_latest_asset`
+- df_latest_events: Output from `df_latest_events_filtered`
 
 Configurations
 - None required.
