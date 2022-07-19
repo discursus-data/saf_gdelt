@@ -16,22 +16,49 @@ Please refer to the [discursus Social Analytics OSS Framework](https://github.co
 The library includes the following ops.
 
 ## gdelt_mining_ops.get_url_to_latest_asset
-Op to fetch the latest url for a specific GDELT asset.
+Fetches the latest url for a specific GDELT asset.
 
-Configurations required:
+Parameters
+- None required.
+
+Configurations
 - gdelt_asset: Which GDELT asset to mine. Values can either be `events`, `mentions` or `gkg`
 
 ## gdelt_mining_ops.build_file_path
-Op to build a file path for saving of data assets
+Builds a file path for saving of data assets.
+
+Parameters
+- gdelt_asset_url: Output from `get_url_to_latest_asset`
+
+Configurations
+- None required.
 
 ## gdelt_mining_ops.mine_latest_asset
-Op to mine the latest asset from GDELT
+Mines the latest asset from GDELT.
+
+Parameters
+- gdelt_asset_url: Output from `get_url_to_latest_asset`
+
+Configurations
+- None required.
 
 ## gdelt_mining_ops.filter_latest_events
-Op to filter the latest events from GDELT using the passed configs
+Filters the latest events from GDELT using the passed configs.
+
+Parameters
+- None required.
+
+Configurations
+- None required.
 
 ## gdelt_mining_ops.filter_latest_mentions
-Op to filter the latest mentions from GDELT using the filtered list of events
+Filters the latest mentions from GDELT using the filtered list of events.
+
+Parameters
+- None required.
+
+Configurations
+- None required.
 
 &nbsp;
 
