@@ -17,7 +17,7 @@ def get_url_to_latest_asset(context):
 
     if context.op_config["gdelt_asset"] == "events": 
         latest_asset_url = latest_updates_text.split('\\n')[0].split(' ')[2]
-    elif context.op_config["gdelt_asset"] == "events":
+    elif context.op_config["gdelt_asset"] == "mentions":
         latest_asset_url = latest_updates_text.split('\\n')[1].split(' ')[2]
 
     context.log.info("Mining asset from : " + latest_asset_url)
