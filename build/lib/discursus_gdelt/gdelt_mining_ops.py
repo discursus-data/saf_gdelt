@@ -39,16 +39,16 @@ def build_file_path(context, gdelt_asset_url):
 ################
 # Op to mine the latest asset from GDELT
 @op
-def mine_latest_asset(context, latest_asset_url):
+def mine_latest_asset(context, gdelt_asset_url):
     context.log.info("Downloading and extracting latest asset")
     
-    latest_asset_filename_zip = latest_asset_url.split('gdeltv2/')[1]
-    latest_asset_filename_csv = latest_asset_filename_zip.split('.zip')[0]
+    gdelt_asset_filename_zip = gdelt_asset_url.split('gdeltv2/')[1]
+    gdelt_asset_filename_csv = gdelt_asset_filename_zip.split('.zip')[0]
 
-    urlretrieve(latest_asset_url, latest_asset_filename_zip)
-    with zipfile.ZipFile(latest_asset_filename_zip, 'r') as zip_ref:
+    urlretrieve(gdelt_asset_url, gdelt_asset_filename_zip)
+    with zipfile.ZipFile(gdelt_asset_filename_zip, 'r') as zip_ref:
         zip_ref.extractall('.')
-    df_latest_asset  = pd.read_csv(latest_asset_filename_csv, sep = '\t', header = None)
+    df_latest_asset  = pd.read_csv(gdelt_asset_filename_csv, sep = '\t', header = None)
 
     context.log.info("Mined : " + str(len(df_latest_asset)) + " rows from asset")
 
