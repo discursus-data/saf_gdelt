@@ -89,3 +89,16 @@ def filter_latest_mentions(context, df_latest_mentions, df_latest_events_filtere
     context.log.info("We now have " + str(len(df_latest_mentions_filtered)) + " remaining mentions out of " + str(len(df_latest_mentions)))
 
     return df_latest_mentions_filtered
+
+
+################
+# Op to filter the latest gkg from GDELT using the filtered list of events
+@op
+def filter_latest_gkg(context, df_latest_gkg, df_latest_events_filtered):
+    context.log.info("Filtering latest gkg")
+    
+    df_latest_gkg_filtered = df_latest_gkg
+    df_latest_gkg_filtered = df_latest_gkg_filtered[(df_latest_gkg_filtered.iloc[:,1].isin(df_latest_events_filtered.iloc[:,0]))]
+    context.log.info("We now have " + str(len(df_latest_gkg_filtered)) + " remaining gkg out of " + str(len(df_latest_gkg)))
+
+    return df_latest_gkg_filtered
