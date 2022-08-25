@@ -1,4 +1,4 @@
-# The Lantrns Analytics' data product framework - GDELT library
+# The Lantrns Analytics open-source data product framework - GDELT library
 This library provides [ops](https://docs.dagster.io/concepts/ops-jobs-graphs/ops) to source the [GDELT](https://www.gdeltproject.org/) public data source.
 
 It is part of the [Lantrns Analytics' data product framework](https://github.com/lantrns-analytics/dpf_core). Please visit the repo for more information. And visit us at [lantrns.co](https://www.lantrns.co) for more context on our mission.
