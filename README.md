@@ -1,12 +1,12 @@
-# discursus GDELT library
+# The Lantrns Analytics' data product framework GDELT library
 This library provides [ops](https://docs.dagster.io/concepts/ops-jobs-graphs/ops) to source the [GDELT](https://www.gdeltproject.org/) public data source.
 
-It is part of the [discursus Social Analytics OSS Framework](https://github.com/discursus-io/discursus_core). Please visit the repo for more information. And visit us at [discursus.io](https://www.discursus.io) for more context on our mission.
+It is part of the [Lantrns Analytics' data product framework](https://github.com/lantrns-analytics/dpf_core). Please visit the repo for more information. And visit us at [lantrns.co](https://www.lantrns.co) for more context on our mission.
 
 &nbsp;
 
 # How to use this library
-Please refer to the [discursus Social Analytics OSS Framework](https://github.com/discursus-io/discursus_core) instructions for how to use a the framework and its libraries.
+Please refer to the [Lantrns Analytics' data product framework](https://github.com/lantrns-analytics/dpf_core) instructions for how to use a the framework and its libraries.
 
 &nbsp;
 

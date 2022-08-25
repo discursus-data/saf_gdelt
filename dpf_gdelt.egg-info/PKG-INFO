@@ -1,7 +1,7 @@
 Metadata-Version: 1.0
-Name: discursus-gdelt
+Name: dpf-gdelt
 Version: 0.1.0
-Summary: GDELT mining package for the discursus framework
+Summary: GDELT mining package for the Lantrns Analytics' data product framework
 Home-page: UNKNOWN
 Author: Olivier Dupuis
 Author-email: UNKNOWN

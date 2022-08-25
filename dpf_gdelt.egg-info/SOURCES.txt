@@ -1,0 +1,9 @@
+LICENSE
+README.md
+setup.py
+dpf_gdelt/__init__.py
+dpf_gdelt/gdelt_mining_ops.py
+dpf_gdelt.egg-info/PKG-INFO
+dpf_gdelt.egg-info/SOURCES.txt
+dpf_gdelt.egg-info/dependency_links.txt
+dpf_gdelt.egg-info/top_level.txt
