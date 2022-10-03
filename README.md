@@ -1,5 +1,5 @@
 # The OSS Social Analytics Framework - GDELT library
-This library provides a client [resource](https://docs.dagster.io/concepts/resources) to interact with the [GDELT](https://www.gdeltproject.org/) public data source.
+This library provides a [resource](https://docs.dagster.io/concepts/resources) to interact with the [GDELT](https://www.gdeltproject.org/) public data source.
 
 It is part of the [Social Analytics Framework](https://github.com/lantrns-analytics/saf_core). ease visit the repo for more information on the framework, its mission and how to use it.
 
@@ -9,15 +9,15 @@ It is part of the [Social Analytics Framework](https://github.com/lantrns-analyt
 # Library
 
 # Methods
-## gdelt_resource.initiate_gdelt_client
-Initialize client to interact with the GDELT public data source
+## gdelt_resource.initiate_gdelt_resource
+Initialize resource to interact with the GDELT public data source
 
 Configurations:
 - None
 
 Example:
 ```
-my_gdelt_client = gdelt_resource.initiate_gdelt_client()
+my_gdelt_resource = gdelt_resource.initiate_gdelt_resource()
 ```
 
 ## gdelt_resource.get_url_to_latest_asset
@@ -31,7 +31,7 @@ Returns:
 
 Example:
 ```
-latest_asset_url = context.resources.gdelt_client.get_url_to_latest_asset(gdelt_asset)
+latest_asset_url = context.resources.gdelt_resource.get_url_to_latest_asset(gdelt_asset)
 ```
 
 ## gdelt_resource.build_file_path
@@ -45,7 +45,7 @@ Returns:
 
 Example:
 ```
-gdelt_asset_file_path = context.resources.gdelt_client.build_file_path(gdelt_asset_url)
+gdelt_asset_file_path = context.resources.gdelt_resource.build_file_path(gdelt_asset_url)
 ```
 
 ## gdelt_resource.mine_latest_asset
@@ -59,7 +59,7 @@ Returns:
 
 Example:
 ```
-df_latest_asset = context.resources.gdelt_client.mine_latest_asset(gdelt_asset_url)
+df_latest_asset = context.resources.gdelt_resource.mine_latest_asset(gdelt_asset_url)
 ```
 
 ## gdelt_resource.filter_latest_events
@@ -75,7 +75,7 @@ Returns:
 
 Example:
 ```
-df_latest_events_filtered = context.resources.gdelt_client.filter_latest_events(df_latest_events, filter_event_code, filter_countries)
+df_latest_events_filtered = context.resources.gdelt_resource.filter_latest_events(df_latest_events, filter_event_code, filter_countries)
 ```
 
 ## gdelt_resource.filter_latest_mentions
@@ -90,7 +90,7 @@ Returns:
 
 Example:
 ```
-df_latest_mentions_filtered = context.resources.gdelt_client.filter_latest_mentions(df_latest_mentions, df_latest_events_filtered)
+df_latest_mentions_filtered = context.resources.gdelt_resource.filter_latest_mentions(df_latest_mentions, df_latest_events_filtered)
 ```
 
 ## gdelt_resource.filter_latest_gkg
@@ -105,7 +105,7 @@ Returns:
 
 Example:
 ```
-df_latest_gkg_filtered = context.resources.gdelt_client.filter_latest_gkg(df_latest_gkg, df_latest_events_filtered)
+df_latest_gkg_filtered = context.resources.gdelt_resource.filter_latest_gkg(df_latest_gkg, df_latest_events_filtered)
 ```
 
 &nbsp;

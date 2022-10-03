@@ -6,7 +6,7 @@ import pandas as pd
 
 
 
-class GDELTClient:
+class GDELTResource:
     # GDELT methods
     ######################
     def get_url_to_latest_asset(self, gdelt_asset):
@@ -84,7 +84,7 @@ class GDELTClient:
 
 
 @resource(
-    description="A GDELT client.",
+    description="A GDELT resource.",
 )
-def initiate_gdelt_client(context):
-    return GDELTClient()
+def initiate_gdelt_resource(context):
+    return GDELTResource()
