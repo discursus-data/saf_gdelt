@@ -1,74 +1,98 @@
-# The Lantrns Analytics open-source data product framework - GDELT library
-This library provides [ops](https://docs.dagster.io/concepts/ops-jobs-graphs/ops) to source the [GDELT](https://www.gdeltproject.org/) public data source.
+# The OSS Social Analytics Framework - GDELT library
+This library provides a [resource](https://docs.dagster.io/concepts/resources) to interact with the [GDELT](https://www.gdeltproject.org/) public data source.
 
-It is part of the [Lantrns Analytics' data product framework](https://github.com/lantrns-analytics/dpf_core). Please visit the repo for more information. And visit us at [lantrns.co](https://www.lantrns.co) for more context on our mission.
-
-&nbsp;
-
-# How to use this library
-Please refer to the [Lantrns Analytics' data product framework](https://github.com/lantrns-analytics/dpf_core) instructions for how to use a the framework and its libraries.
+It is part of the [Social Analytics Framework](https://github.com/lantrns-analytics/saf_core). ease visit the repo for more information on the framework, its mission and how to use it.
 
 &nbsp;
 
-# Library Ops
-The library includes the following ops.
 
-## gdelt_mining_ops.get_url_to_latest_asset
+# Library
+
+# Methods
+## gdelt_resource.initiate_gdelt_resource
+Initialize resource to interact with the GDELT public data source
+
+Configurations:
+- None
+
+Example:
+```
+my_gdelt_resource = gdelt_resource.initiate_gdelt_resource()
+```
+
+## gdelt_resource.get_url_to_latest_asset
 Fetches the latest url for a specific GDELT asset.
 
-Parameters
-- None required.
-
-Configurations
+Parameters:
 - gdelt_asset: Which GDELT asset to mine. Values can either be `events`, `mentions` or `gkg`
 
-## gdelt_mining_ops.build_file_path
-Builds a file path for saving of data assets.
+Returns:
+- latest_asset_url: URL of latest asset
 
-Parameters
-- gdelt_asset_url: Output from `get_url_to_latest_asset`
+Example:
+```
+latest_asset_url = context.resources.gdelt_resource.get_url_to_latest_asset(gdelt_asset)
+```
 
-Configurations
-- None required.
-
-## gdelt_mining_ops.mine_latest_asset
+## gdelt_resource.mine_latest_asset
 Mines the latest asset from GDELT.
 
-Parameters
-- gdelt_asset_url: Output from `get_url_to_latest_asset`
+Parameters:
+- gdelt_asset_url: URL of latest asset
 
-Configurations
-- None required.
+Returns:
+- df_latest_asset: Dataframe of latest asset
 
-## gdelt_mining_ops.filter_latest_events
+Example:
+```
+df_latest_asset = context.resources.gdelt_resource.mine_latest_asset(gdelt_asset_url)
+```
+
+## gdelt_resource.filter_latest_events
 Filters the latest events from GDELT using the passed configs.
 
-Parameters
-- df_latest_events: Output from `mine_latest_asset`
+Parameters:
+- df_latest_events: Dataframe of latest events asset
+- filter_event_code: Event code of events to keep
+- filter_countries: Country codes of events to keep
 
-Configurations
-- filter_event_code: Event code to mine (e.g. 14 for protest events)
-- filter_countries: Country codes to mine (e.g. US)
+Returns:
+- df_latest_events_filtered: Filtered dataframe of latest events asset
 
-## gdelt_mining_ops.filter_latest_mentions
+Example:
+```
+df_latest_events_filtered = context.resources.gdelt_resource.filter_latest_events(df_latest_events, filter_event_code, filter_countries)
+```
+
+## gdelt_resource.filter_latest_mentions
 Filters the latest mentions from GDELT using the filtered list of events.
 
-Parameters
-- df_latest_mentions: Output from `mine_latest_asset`
-- df_latest_events_filtered: Output from `df_latest_events_filtered`
+Parameters:
+- df_latest_mentions: Dataframe of latest mentions asset
+- df_latest_events_filtered: Filtered dataframe of latest events asset
 
-Configurations
-- None required.
+Returns:
+- df_latest_mentions_filtered: Filtered dataframe of latest mentions asset
 
-## gdelt_mining_ops.filter_latest_gkg
+Example:
+```
+df_latest_mentions_filtered = context.resources.gdelt_resource.filter_latest_mentions(df_latest_mentions, df_latest_events_filtered)
+```
+
+## gdelt_resource.filter_latest_gkg
 Filters the latest gkg from GDELT using the filtered list of events.
 
-Parameters
-- df_latest_gkg: Output from `mine_latest_asset`
-- df_latest_events_filtered: Output from `df_latest_events_filtered`
+Parameters:
+- df_latest_gkg: Dataframe of latest gkg asset
+- df_latest_events_filtered: Filtered dataframe of latest events asset
 
-Configurations
-- None required.
+Returns:
+- df_latest_gkg_filtered: Filtered dataframe of latest gkg asset
+
+Example:
+```
+df_latest_gkg_filtered = context.resources.gdelt_resource.filter_latest_gkg(df_latest_gkg, df_latest_events_filtered)
+```
 
 &nbsp;
 

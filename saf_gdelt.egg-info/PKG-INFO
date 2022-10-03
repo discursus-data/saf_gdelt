@@ -1,7 +1,7 @@
 Metadata-Version: 1.0
-Name: dpf-gdelt
+Name: saf-gdelt
 Version: 0.1.0
-Summary: GDELT mining package for the Lantrns Analytics' data product framework
+Summary: GDELT resource library for the Social Analytics Framework
 Home-page: UNKNOWN
 Author: Olivier Dupuis
 Author-email: UNKNOWN
