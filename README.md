@@ -34,20 +34,6 @@ Example:
 latest_asset_url = context.resources.gdelt_resource.get_url_to_latest_asset(gdelt_asset)
 ```
 
-## gdelt_resource.build_file_path
-Builds a file path for saving of data assets.
-
-Parameters:
-- gdelt_asset_url: URL of latest asset
-
-Returns:
-- gdelt_asset_file_path: File path where data asset is saved
-
-Example:
-```
-gdelt_asset_file_path = context.resources.gdelt_resource.build_file_path(gdelt_asset_url)
-```
-
 ## gdelt_resource.mine_latest_asset
 Mines the latest asset from GDELT.
 

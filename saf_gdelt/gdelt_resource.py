@@ -24,17 +24,6 @@ class GDELTResource:
     
 
     
-    def build_file_path(self, gdelt_asset_url):
-        # Builds a file path for saving of data assets
-
-        gdelt_asset_filename_zip = str(gdelt_asset_url).split('gdeltv2/')[1]
-        gdelt_asset_filename_csv = gdelt_asset_filename_zip.split('.zip')[0]
-        gdelt_asset_filedate = gdelt_asset_filename_csv[0:8]
-        gdelt_asset_file_path = 'sources/gdelt/' + gdelt_asset_filedate + '/' + gdelt_asset_filename_csv
-
-        return gdelt_asset_file_path
-
-
     def mine_latest_asset(self, gdelt_asset_url):
         # Mines the latest asset from GDELT
         
@@ -74,7 +63,7 @@ class GDELTResource:
         return df_latest_mentions_filtered
 
 
-    def filter_latest_gkg(context, df_latest_gkg, df_latest_events_filtered):
+    def filter_latest_gkg(self, df_latest_gkg, df_latest_events_filtered):
         # Filters the latest gkg from GDELT using the filtered list of events
 
         df_latest_gkg_filtered = df_latest_gkg
@@ -86,5 +75,5 @@ class GDELTResource:
 @resource(
     description="A GDELT resource.",
 )
-def initiate_gdelt_resource(context):
+def initiate_gdelt_resource(self):
     return GDELTResource()
