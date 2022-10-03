@@ -7,10 +7,6 @@ import pandas as pd
 
 
 class GDELTResource:
-    def __init__(self):
-        self._gdelt_url = "https://www.gdeltproject.org/"
-    
-
     # GDELT methods
     ######################
     def get_url_to_latest_asset(self, gdelt_asset):
