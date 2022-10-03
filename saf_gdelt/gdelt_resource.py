@@ -75,5 +75,5 @@ class GDELTResource:
 @resource(
     description="A GDELT resource.",
 )
-def initiate_gdelt_resource(self):
+def initiate_gdelt_resource(context):
     return GDELTResource()
