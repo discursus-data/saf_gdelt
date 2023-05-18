@@ -21,6 +21,8 @@ class GDELTResource:
             latest_asset_url = latest_updates_text.split('\\n')[0].split(' ')[2]
         elif gdelt_asset == "mentions":
             latest_asset_url = latest_updates_text.split('\\n')[1].split(' ')[2]
+        elif gdelt_asset == "gkg":
+            latest_asset_url = latest_updates_text.split('\\n')[2].split(' ')[2]
 
         return latest_asset_url
     
