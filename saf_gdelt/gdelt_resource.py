@@ -15,6 +15,8 @@ class GDELTResource:
         latest_updates_url = 'http://data.gdeltproject.org/gdeltv2/lastupdate.txt'
         latest_updates_text = str(urlopen(latest_updates_url).read())
 
+        latest_asset_url = None  # Assign a default value
+
         if gdelt_asset == "events": 
             latest_asset_url = latest_updates_text.split('\\n')[0].split(' ')[2]
         elif gdelt_asset == "mentions":
