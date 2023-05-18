@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "saf-gdelt"
+version = "0.2.1"
+description = "GDELT resource library for the Social Analytics Framework"
+authors = ["Olivier Dupuis <odupuis@lantrns.co>"]
+license = "MIT"
+readme = "README.md"
+packages = [{include = "saf_gdelt"}]
+
+[tool.poetry.dependencies]
+python = ">=3.8,<3.11"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+

@@ -1,9 +1,0 @@
-LICENSE
-README.md
-setup.py
-saf_gdelt/__init__.py
-saf_gdelt/gdelt_resource.py
-saf_gdelt.egg-info/PKG-INFO
-saf_gdelt.egg-info/SOURCES.txt
-saf_gdelt.egg-info/dependency_links.txt
-saf_gdelt.egg-info/top_level.txt
